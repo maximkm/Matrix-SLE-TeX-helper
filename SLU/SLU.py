@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import deepcopy as dpc
 from math import gcd
 
 
@@ -26,11 +26,11 @@ def TransposeSLU(slu):
         temp = []
         for j in range(a):
             temp.append(slu[j][i])
-        resSLU.append(deepcopy(temp))
+        resSLU.append(dpc(temp))
     return resSLU
 
 
-def Move(slu, x, y, z, tr):
+def Action(slu, x, y, z, tr):
     if tr:
         slu = TransposeSLU(slu)
     if z == 'swap':
@@ -53,7 +53,7 @@ def Move(slu, x, y, z, tr):
 
 def addHist(slu, hist, trHist, sepHist, sep, tr):
     if slu != hist[-1]:
-        hist.append(deepcopy(slu))
+        hist.append(dpc(slu))
         trHist.append(tr)
         sepHist.append(sep)
 
@@ -68,13 +68,13 @@ def Shrink(slu, hist, trHist, sepHist, sep, tr):
                         temp = gcd(temp, slu[i][k])
                 break
         if temp != 1:
-            slu = Move(deepcopy(slu), i + 1, temp, '/', 0)
+            slu = Action(dpc(slu), i + 1, temp, '/', 0)
     addHist(slu, hist, trHist, sepHist, sep, tr)
     return slu
 
 
 def EchelonForm(slu, mode, hist, trHist, sepHist, sep, tr):
-    slu = Shrink(deepcopy(slu), hist, trHist, sepHist, sep, tr)
+    slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, tr)
     row, col = 0, 0
     fav = []
     while row < len(slu) and col < len(slu[0]):
@@ -84,39 +84,39 @@ def EchelonForm(slu, mode, hist, trHist, sepHist, sep, tr):
                 temp.append([slu[i][col], i])
         if temp:
             temp.sort(key=lambda x: abs(x[0]))
-            slu = Move(deepcopy(slu), row + 1, temp[0][1] + 1, 'swap', 0)
+            slu = Action(dpc(slu), row + 1, temp[0][1] + 1, 'swap', 0)
         if slu[row][col] != 0:
             if slu[row][col] < 0:
-                slu = Move(deepcopy(slu), row + 1, -1, '*', 0)
-            slu = Shrink(deepcopy(slu), hist, trHist, sepHist, sep, tr)
+                slu = Action(dpc(slu), row + 1, -1, '*', 0)
+            slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, tr)
             fav.append([row, col])
             for i in range(row + 1, len(slu)):
                 if slu[i][col] != 0:
                     if slu[i][col] % slu[row][col] == 0:
-                        slu = Move(deepcopy(slu), i + 1, row + 1, -slu[i][col] // slu[row][col], 0)
+                        slu = Action(dpc(slu), i + 1, row + 1, -slu[i][col] // slu[row][col], 0)
                     else:
                         idx = slu[row][col] // gcd(slu[i][col], slu[row][col])
-                        slu = Move(deepcopy(slu), i + 1, idx, '*', 0)
-                        slu = Move(deepcopy(slu), i + 1, row + 1, -slu[i][col] // slu[row][col], 0)
+                        slu = Action(dpc(slu), i + 1, idx, '*', 0)
+                        slu = Action(dpc(slu), i + 1, row + 1, -slu[i][col] // slu[row][col], 0)
                     addHist(slu, hist, trHist, sepHist, sep, tr)
             row += 1
             col += 1
         else:
             col += 1
-        slu = Shrink(deepcopy(slu), hist, trHist, sepHist, sep, tr)
+        slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, tr)
     if mode:
         fav.reverse()
         for row, col in fav:
             for i in range(row, 0, -1):
                 if slu[i - 1][col] != 0:
                     if slu[i - 1][col] % slu[row][col] == 0:
-                        slu = Move(deepcopy(slu), i, row + 1, -slu[i - 1][col] // slu[row][col], 0)
+                        slu = Action(dpc(slu), i, row + 1, -slu[i - 1][col] // slu[row][col], 0)
                     else:
                         idx = slu[row][col] // gcd(slu[i - 1][col], slu[row][col])
-                        slu = Move(deepcopy(slu), i, idx, '*', 0)
-                        slu = Move(deepcopy(slu), i, row + 1, -slu[i - 1][col] // slu[row][col], 0)
+                        slu = Action(dpc(slu), i, idx, '*', 0)
+                        slu = Action(dpc(slu), i, row + 1, -slu[i - 1][col] // slu[row][col], 0)
                     addHist(slu, hist, trHist, sepHist, sep, tr)
-        slu = Shrink(deepcopy(slu), hist, trHist, sepHist, sep, tr)
+        slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, tr)
     return slu
 
 
@@ -143,7 +143,6 @@ def SluLoad():
         for num, line in enumerate(file_handler):
             if num == 3:
                 break
-            #temp =
             res.append(list(line.replace(' ', '').replace('\n', '').split('='))[-1])
     autoPrint, mode, delim = res
     return slu, sep, colName, int(autoPrint), int(mode), delim
@@ -175,7 +174,7 @@ def main():
         return 0
     print(f'SLU load complete, mode =', ('col' if mode else 'row'))
     print('input \'help\' for help')
-    hist = [deepcopy(slu)]
+    hist = [dpc(slu)]
     trHist = [trans]
     sepHist = [sep]
     while post != 'exit':
@@ -200,10 +199,10 @@ def main():
                         if cnt % constRes == 0 and cnt != 0:
                             print(f'{delim} \\]\n\\[', file=output)
                         if not colName:
-                            OutPutSluTex(deepcopy(sluX), sepX + trX, output,
+                            OutPutSluTex(dpc(sluX), sepX + trX, output,
                                          delim if cnt != 0 and cnt % constRes != 0 else '')
                         else:
-                            OutPutSluTex(UnionName(deepcopy(sluX), colName, trX), sepX + trX, output,
+                            OutPutSluTex(UnionName(dpc(sluX), colName, trX), sepX + trX, output,
                                          delim if cnt != 0 and cnt % constRes != 0 else '')
                         cnt += 1
                 print('\\]', file=output)
@@ -211,7 +210,7 @@ def main():
             elif post == 'back':
                 if len(hist) != 1:
                     hist.pop()
-                    slu = deepcopy(hist[-1])
+                    slu = dpc(hist[-1])
             elif post == 'help':
                 print('(i)(j) —— swap row i and row j')
                 print('(i)*(k) —— elems row i * num k')
@@ -231,7 +230,7 @@ def main():
                     trans = False if trans else True
                     slu = TransposeSLU(slu)
                     sep = len(slu[0])
-                    hist.append(deepcopy(slu))
+                    hist.append(dpc(slu))
                     trHist.append(trans)
                     sepHist.append(sep)
                 else:
@@ -243,13 +242,13 @@ def main():
                 if trans:
                     SaveSLU(slu, sep)
                 else:
-                    SaveSLU(UnionName(deepcopy(slu), colName, trans), sep)
+                    SaveSLU(UnionName(dpc(slu), colName, trans), sep)
             elif post == 'form':
                 slu = EchelonForm(slu, 0, hist, trHist, sepHist, sep, trans)
             elif post == 'bestform':
                 slu = EchelonForm(slu, 1,  hist, trHist, sepHist, sep, trans)
             elif post == 'shrink':
-                slu = Shrink(deepcopy(slu), hist, trHist, sepHist, sep, trans)
+                slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, trans)
             else:
                 try:
                     temp = post[post.find(')') + 1:post.rfind('(')]
@@ -258,28 +257,28 @@ def main():
                     elif temp == '+':
                         temp = 1
                     if temp == '*':
-                        slu = Move(deepcopy(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]), '*',
+                        slu = Action(dpc(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]), '*',
                                    mode)
                     elif temp == '/':
-                        slu = Move(deepcopy(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]), '/',
+                        slu = Action(dpc(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]), '/',
                                    mode)
                     elif temp != '':
-                        slu = Move(deepcopy(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]),
+                        slu = Action(dpc(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]),
                                    int(temp),
                                    mode)
                     else:
-                        slu = Move(deepcopy(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]),
+                        slu = Action(dpc(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]),
                                    'swap', mode)
                         if mode and colName:
                             x = int(post[1:post.find(')')])
                             y = int(post[post.rfind('(') + 1:-1])
                             colName[x - 1], colName[y - 1] = colName[y - 1], colName[x - 1]
                     if hist[-1] != slu:
-                        hist.append(deepcopy(slu))
+                        hist.append(dpc(slu))
                         trHist.append(trans)
                         sepHist.append(sep)
                 except BaseException:
-                    slu = deepcopy(hist[-1])
+                    slu = dpc(hist[-1])
 
 
 if __name__ == '__main__':
