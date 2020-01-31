@@ -3,8 +3,7 @@ from math import gcd
 
 
 def OutPutSluTex(slu, sep, output, delim=''):
-    print(f'{delim} ' + '\\left( \\begin{array}{' + 'c' * sep + ('|' if sep != len(slu[0]) else '') + 'c' * (
-            len(slu[0]) - sep) + '}', file=output)
+    print(f'{delim} ' + '\\left( \\begin{array}{' + 'c' * sep + ('|' if sep != len(slu[0]) else '') + 'c' * (len(slu[0]) - sep) + '}', file=output)
     for i in range(len(slu)):
         print(' & '.join(map(str, slu[i])) + ('\\\\' if i != len(slu) - 1 else ''), file=output)
     print('\\end{array}\\right)', file=output)
@@ -56,6 +55,7 @@ def addHist(slu, hist, trHist, sepHist, sep, tr):
         hist.append(dpc(slu))
         trHist.append(tr)
         sepHist.append(sep)
+
 
 def Shrink(slu, hist, trHist, sepHist, sep, tr):
     for i in range(len(slu)):
@@ -120,6 +120,45 @@ def EchelonForm(slu, mode, hist, trHist, sepHist, sep, tr):
     return slu
 
 
+def FSR(slu, output):
+    slu = EchelonForm(dpc(slu), 1, [0], [0], [0], len(slu), 0)
+    row, col = 0, 0
+    fav, free = [], []
+    while row < len(slu) and col < len(slu[0]):
+        if slu[row][col] != 0:
+            fav.append([row, col])
+            row += 1
+            col += 1
+        else:
+            free.append(col)
+            col += 1
+    print('$', end='', file=output)
+    free.reverse()
+    for num, col in enumerate(free):
+        print('--')
+        temp = []
+        for row, y in fav:
+            if slu[row][col] != 0:
+                temp.append(slu[row][y] // gcd(slu[row][y], slu[row][col]))
+        res = 1
+        if temp:
+            res = temp[0]
+        for item in temp:
+            res = res*item//gcd(res, item)
+        temp = [0]*len(slu[0])
+        temp[col] = res
+        for row, y in fav:
+            temp[y] = -slu[row][col]*res//slu[row][y]
+        print('\\left( \\begin{array}{c}', file=output)
+        for i, item in enumerate(temp):
+            print(f'{item}' + '\\\\'*(i != len(temp) - 1), end=(' ' if i != len(temp) - 1 else '\n'), file=output)
+            print(item)
+        print('\\end{array} \\right)' + ','*(num != len(free) - 1), end=('\n' if num != len(free) - 1 else ''), file=output)
+        if (num == len(free) - 1):
+            print('--')
+    print('$', file=output)
+
+
 def SluLoad():
     slu = []
     sep = 0
@@ -154,6 +193,7 @@ def SaveSLU(slu, sep):
         for j in range(len(slu[0])):
             print(f'{slu[i][j]}' + (' |' if j == sep - 1 != len(slu[0]) - 1 and i == 0 else ''), end='\t', file=inp)
         print(file=inp)
+    inp.close()
 
 
 def UnionName(slu, colName, tr):
@@ -246,9 +286,13 @@ def main():
             elif post == 'form':
                 slu = EchelonForm(slu, 0, hist, trHist, sepHist, sep, trans)
             elif post == 'bestform':
-                slu = EchelonForm(slu, 1,  hist, trHist, sepHist, sep, trans)
+                slu = EchelonForm(slu, 1, hist, trHist, sepHist, sep, trans)
             elif post == 'shrink':
                 slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, trans)
+            elif post == 'fsr':
+                output = open('outputFSR.txt', 'w')
+                FSR(dpc(slu), output)
+                output.close()
             else:
                 try:
                     temp = post[post.find(')') + 1:post.rfind('(')]
@@ -257,18 +301,13 @@ def main():
                     elif temp == '+':
                         temp = 1
                     if temp == '*':
-                        slu = Action(dpc(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]), '*',
-                                   mode)
+                        slu = Action(dpc(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]), '*', mode)
                     elif temp == '/':
-                        slu = Action(dpc(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]), '/',
-                                   mode)
+                        slu = Action(dpc(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]), '/', mode)
                     elif temp != '':
-                        slu = Action(dpc(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]),
-                                   int(temp),
-                                   mode)
+                        slu = Action(dpc(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]), int(temp), mode)
                     else:
-                        slu = Action(dpc(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]),
-                                   'swap', mode)
+                        slu = Action(dpc(slu), int(post[1:post.find(')')]), int(post[post.rfind('(') + 1:-1]), 'swap', mode)
                         if mode and colName:
                             x = int(post[1:post.find(')')])
                             y = int(post[post.rfind('(') + 1:-1])
