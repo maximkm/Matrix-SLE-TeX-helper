@@ -2,8 +2,8 @@ from copy import deepcopy as dpc
 from math import gcd
 
 
-def OutPutSluTex(slu, sep, output, delim=''):
-    print(f'{delim} ' + '\\left( \\begin{array}{' + 'c' * sep + ('|' if sep != len(slu[0]) else '') + 'c' * (len(slu[0]) - sep) + '}', file=output)
+def OutPutSluTex(slu, sep, output, dem=''):
+    print(f'{dem} ' + '\\left( \\begin{array}{' + 'c' * sep + ('|' if sep != len(slu[0]) else '') + 'c' * (len(slu[0]) - sep) + '}', file=output)
     for i in range(len(slu)):
         print(' & '.join(map(str, slu[i])) + ('\\\\' if i != len(slu) - 1 else ''), file=output)
     print('\\end{array}\\right)', file=output)
@@ -50,7 +50,7 @@ def Action(slu, x, y, z, tr):
     return slu
 
 
-def addHist(slu, hist, trHist, sepHist, sep, tr):
+def AddHist(slu, hist, trHist, sepHist, sep, tr):
     if slu != hist[-1]:
         hist.append(dpc(slu))
         trHist.append(tr)
@@ -69,7 +69,7 @@ def Shrink(slu, hist, trHist, sepHist, sep, tr):
                 break
         if temp != 1:
             slu = Action(dpc(slu), i + 1, temp, '/', 0)
-    addHist(slu, hist, trHist, sepHist, sep, tr)
+    AddHist(slu, hist, trHist, sepHist, sep, tr)
     return slu
 
 
@@ -98,7 +98,7 @@ def EchelonForm(slu, mode, hist, trHist, sepHist, sep, tr):
                         idx = slu[row][col] // gcd(slu[i][col], slu[row][col])
                         slu = Action(dpc(slu), i + 1, idx, '*', 0)
                         slu = Action(dpc(slu), i + 1, row + 1, -slu[i][col] // slu[row][col], 0)
-                    addHist(slu, hist, trHist, sepHist, sep, tr)
+                    AddHist(slu, hist, trHist, sepHist, sep, tr)
             row += 1
             col += 1
         else:
@@ -115,7 +115,7 @@ def EchelonForm(slu, mode, hist, trHist, sepHist, sep, tr):
                         idx = slu[row][col] // gcd(slu[i - 1][col], slu[row][col])
                         slu = Action(dpc(slu), i, idx, '*', 0)
                         slu = Action(dpc(slu), i, row + 1, -slu[i - 1][col] // slu[row][col], 0)
-                    addHist(slu, hist, trHist, sepHist, sep, tr)
+                    AddHist(slu, hist, trHist, sepHist, sep, tr)
         slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, tr)
     return slu
 
@@ -132,31 +132,32 @@ def FSR(slu, output):
         else:
             free.append(col)
             col += 1
-    print('$', end='', file=output)
-    free.reverse()
-    for num, col in enumerate(free):
-        print('--')
-        temp = []
-        for row, y in fav:
-            if slu[row][col] != 0:
-                temp.append(slu[row][y] // gcd(slu[row][y], slu[row][col]))
-        res = 1
-        if temp:
-            res = temp[0]
-        for item in temp:
-            res = res*item//gcd(res, item)
-        temp = [0]*len(slu[0])
-        temp[col] = res
-        for row, y in fav:
-            temp[y] = -slu[row][col]*res//slu[row][y]
-        print('\\left( \\begin{array}{c}', file=output)
-        for i, item in enumerate(temp):
-            print(f'{item}' + '\\\\'*(i != len(temp) - 1), end=(' ' if i != len(temp) - 1 else '\n'), file=output)
-            print(item)
-        print('\\end{array} \\right)' + ','*(num != len(free) - 1), end=('\n' if num != len(free) - 1 else ''), file=output)
-        if (num == len(free) - 1):
+    if free:
+        print('$', end='', file=output)
+        free.reverse()
+        for num, col in enumerate(free):
             print('--')
-    print('$', file=output)
+            temp = []
+            for row, y in fav:
+                if slu[row][col] != 0:
+                    temp.append(slu[row][y] // gcd(slu[row][y], slu[row][col]))
+            res = 1
+            if temp:
+                res = temp[0]
+            for item in temp:
+                res = res*item//gcd(res, item)
+            temp = [0]*len(slu[0])
+            temp[col] = res
+            for row, y in fav:
+                temp[y] = -slu[row][col]*res//slu[row][y]
+            print('\\left( \\begin{array}{c}', file=output)
+            for i, item in enumerate(temp):
+                print(f'{item}' + '\\\\'*(i != len(temp) - 1), end=(' ' if i != len(temp) - 1 else '\n'), file=output)
+                print(item)
+            print('\\end{array} \\right)' + ',' * (len(free) - 1 != num), end=('\n' if num != len(free) - 1 else ''), file=output)
+            if num == len(free) - 1:
+                print('--')
+        print('$', file=output)
 
 
 def SluLoad():
@@ -263,8 +264,10 @@ def main():
                 print('mode —— поменять вид преобразований (строки/столбцы)')
                 print('form —— ступенчатый вид')
                 print('best form —— улучшенный ступенчатый вид')
+                print('fsr —— код ФСР LaTeX')
                 print('shrink —— упростить СЛУ')
                 print('save —— сохранить матрицу в input.txt')
+                print('exit —— завершить программу')
             elif post == 'tr':
                 if sep == len(slu[0]):
                     trans = False if trans else True
