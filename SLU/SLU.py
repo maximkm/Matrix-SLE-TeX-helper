@@ -226,6 +226,7 @@ def main():
             if post == 'p':
                 OutPutSlu(slu, sep)
             elif post == 'pt':
+                num = 0
                 cnt = 0
                 constRes = ''
                 while not constRes.isdigit():
@@ -234,8 +235,9 @@ def main():
                 output = open('output.txt', 'w')
                 print('\\[', file=output)
                 for sepX, trX, sluX in zip(sepHist, trHist, hist):
+                    num += 1
                     OutPutSlu(sluX, sepX)
-                    ans = input('Save this matrix? (y/n): ')
+                    ans = input(f'Save this matrix {num}/{len(hist)}? (y/n): ')
                     if ans.lower() == 'y':
                         if cnt % constRes == 0 and cnt != 0:
                             print(f'{delim} \\]\n\\[', file=output)
