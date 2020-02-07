@@ -23,7 +23,9 @@ def LastSLU(slu, colName, tr, sep, output, cnt, constRes, dem=''):
         flag = False
         temp = 0
         for col in range(len(slu[row])):
-            if slu[row][col] and slu[row][col] != 1:
+            if slu[row][col] == 1:
+                break
+            if slu[row][col]:
                 temp = slu[row][col]
                 flag = True
                 break
