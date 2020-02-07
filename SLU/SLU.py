@@ -284,6 +284,8 @@ def main():
             elif post == 'back':
                 if len(hist) != 1:
                     hist.pop()
+                    sepHist.pop()
+                    trHist.pop()
                     slu = dpc(hist[-1])
             elif post == 'help':
                 print('(i)(j) —— swap row i and row j')
