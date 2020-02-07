@@ -17,6 +17,34 @@ def OutPutSlu(slu, sep):
         print('')
 
 
+def LastSLU(slu, sep, output, cnt, constRes, dem):
+    res = False
+    for row in range(len(slu)):
+        flag = False
+        temp = 0
+        for col in range(len(slu[row])):
+            if slu[row][col] and slu[row][col] != 1:
+                temp = slu[row][col]
+                flag = True
+                break
+        if flag:
+            for col in range(len(slu[row])):
+                if slu[row][col]:
+                    if slu[row][col] % temp == 0:
+                        slu[row][col] //= temp
+                    else:
+                        bar = gcd(slu[row][col], temp)
+                        slu[row][col] = '\\frac{' + str(slu[row][col]//bar) + '}{' + str(temp//bar) + '}'
+                        res = True
+    if res:
+        OutPutSlu(slu, sep)
+        ans = input('save last SLU? ')
+        if ans.lower() == 'y':
+            if cnt % constRes == 0 and cnt != 0:
+                print(f'{dem} \\]\n\\[', file=output)
+            OutPutSluTex(slu, sep, output, dem)
+
+
 def TransposeSLU(slu):
     a = len(slu)
     b = len(slu[0])
@@ -242,12 +270,15 @@ def main():
                         if cnt % constRes == 0 and cnt != 0:
                             print(f'{delim} \\]\n\\[', file=output)
                         if not colName:
-                            OutPutSluTex(dpc(sluX), sepX + trX, output,
-                                         delim if cnt != 0 and cnt % constRes != 0 else '')
+                            OutPutSluTex(dpc(sluX), sepX + trX, output, delim if cnt != 0 and cnt % constRes != 0 else '')
                         else:
-                            OutPutSluTex(UnionName(dpc(sluX), colName, trX), sepX + trX, output,
-                                         delim if cnt != 0 and cnt % constRes != 0 else '')
+                            OutPutSluTex(UnionName(dpc(sluX), colName, trX), sepX + trX, output, delim if cnt != 0 and cnt % constRes != 0 else '')
                         cnt += 1
+                    if num == len(sepHist):
+                        if not colName:
+                            LastSLU(dpc(sluX), sepX + trX, output, cnt, constRes, delim if cnt != 0 and cnt % constRes != 0 else '')
+                        else:
+                            LastSLU(UnionName(dpc(sluX), colName, trX), sepX + trX, output, cnt, constRes, delim if cnt != 0 and cnt % constRes != 0 else '')
                 print('\\]', file=output)
                 output.close()
             elif post == 'back':
