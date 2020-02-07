@@ -17,7 +17,7 @@ def OutPutSlu(slu, sep):
         print('')
 
 
-def LastSLU(slu, sep, output, cnt, constRes, dem):
+def LastSLU(slu, colName, tr, sep, output, cnt, constRes, dem=''):
     res = False
     for row in range(len(slu)):
         flag = False
@@ -42,7 +42,10 @@ def LastSLU(slu, sep, output, cnt, constRes, dem):
         if ans.lower() == 'y':
             if cnt % constRes == 0 and cnt != 0:
                 print(f'{dem} \\]\n\\[', file=output)
-            OutPutSluTex(slu, sep, output, dem)
+            if not colName:
+                OutPutSluTex(dpc(slu), sep, output, dem)
+            else:
+                OutPutSluTex(UnionName(dpc(slu), colName, tr), sep, output, dem)
 
 
 def TransposeSLU(slu):
@@ -275,10 +278,7 @@ def main():
                             OutPutSluTex(UnionName(dpc(sluX), colName, trX), sepX + trX, output, delim if cnt != 0 and cnt % constRes != 0 else '')
                         cnt += 1
                     if num == len(sepHist):
-                        if not colName:
-                            LastSLU(dpc(sluX), sepX + trX, output, cnt, constRes, delim if cnt != 0 and cnt % constRes != 0 else '')
-                        else:
-                            LastSLU(UnionName(dpc(sluX), colName, trX), sepX + trX, output, cnt, constRes, delim if cnt != 0 and cnt % constRes != 0 else '')
+                        LastSLU(dpc(sluX), colName, trX, sepX + trX, output, cnt, constRes, delim if cnt != 0 and cnt % constRes != 0 else '')
                 print('\\]', file=output)
                 output.close()
             elif post == 'back':
