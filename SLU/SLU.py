@@ -43,9 +43,9 @@ def LastSLU(slu, colName, tr, sep, output, cnt, constRes, dem=''):
             if cnt % constRes == 0 and cnt != 0:
                 print(f'{dem} \\]\n\\[', file=output)
             if not colName:
-                OutPutSluTex(dpc(slu), sep, output, dem)
+                OutPutSluTex(dpc(slu), sep, output, dem if cnt != 0 and cnt % constRes != 0 else '')
             else:
-                OutPutSluTex(UnionName(dpc(slu), colName, tr), sep, output, dem)
+                OutPutSluTex(UnionName(dpc(slu), colName, tr), sep, output, dem if cnt != 0 and cnt % constRes != 0 else '')
 
 
 def TransposeSLU(slu):
@@ -278,7 +278,7 @@ def main():
                             OutPutSluTex(UnionName(dpc(sluX), colName, trX), sepX + trX, output, delim if cnt != 0 and cnt % constRes != 0 else '')
                         cnt += 1
                     if num == len(sepHist):
-                        LastSLU(dpc(sluX), colName, trX, sepX + trX, output, cnt, constRes, delim if cnt != 0 and cnt % constRes != 0 else '')
+                        LastSLU(dpc(sluX), colName, trX, sepX + trX, output, cnt, constRes, delim)
                 print('\\]', file=output)
                 output.close()
             elif post == 'back':
