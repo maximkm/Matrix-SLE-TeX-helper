@@ -17,8 +17,7 @@ def OutPutSlu(slu, sep):
         print('')
 
 
-def LastSLU(slu, colName, tr, sep, output, cnt, constRes, dem=''):
-    res = False
+def ConvertSLU(slu):
     for row in range(len(slu)):
         flag = False
         temp = 0
@@ -36,9 +35,34 @@ def LastSLU(slu, colName, tr, sep, output, cnt, constRes, dem=''):
                         slu[row][col] //= temp
                     else:
                         bar = gcd(slu[row][col], temp)
+                        if temp < 0:
+                            bar = -bar
                         slu[row][col] = '\\frac{' + str(slu[row][col]//bar) + '}{' + str(temp//bar) + '}'
-                        res = True
-    if res:
+    return slu
+
+
+def OutPutDouble(slu, mode, sep, ord = 2):
+    slu = ConvertSLU(slu)
+    if mode.lower() == 'd':
+        for i in range(len(slu)):
+            for j in range(len(slu[i])):
+                if 'frac' in str(slu[i][j]):
+                    temp = slu[i][j].replace('\\frac', '').split('}{')
+                    slu[i][j] = round(int(temp[0][1:])/int(temp[1][:-1]), ord)
+    else:
+        for i in range(len(slu)):
+            for j in range(len(slu[i])):
+                if 'frac' in str(slu[i][j]):
+                    temp = slu[i][j].replace('\\frac', '').split('}{')
+                    slu[i][j] = f'{temp[0][1:]}/{temp[1][:-1]}'
+    OutPutSlu(slu, sep)
+    print('-'*50)
+
+
+def LastSLU(slu, colName, tr, sep, output, cnt, constRes, dem=''):
+    sluTemp = slu
+    slu = ConvertSLU(slu)
+    if sluTemp != slu:
         OutPutSlu(slu, sep)
         ans = input('save last SLU? ')
         if ans.lower() == 'y':
@@ -258,6 +282,13 @@ def main():
         for post in posts:
             if post == 'p':
                 OutPutSlu(slu, sep)
+            elif post[:2] == 'pd':
+                if len(post) == 2:
+                    OutPutDouble(dpc(slu), 'd', sep)
+                elif post[2:].isalnum():
+                    OutPutDouble(dpc(slu), 'd', sep, int(post[2:]))
+            elif post == 'pf':
+                OutPutDouble(dpc(slu), 'f', sep)
             elif post == 'pt':
                 num = 0
                 cnt = 0
@@ -296,6 +327,8 @@ def main():
                 print('(i)+-k(j) —— row i +- k * row j')
                 print('p —— print SLU')
                 print('pt —— print history LaTeX code SLU')
+                print('pdk —— вывести СЛУ с дробями, k - необязательный параметр (кол-во знаков после запятой)')
+                print('pf —— вывести СЛУ ввиде несократимой дроби')
                 print('back —— cancel last action')
                 print('tr —— transpose matrix')
                 print('mode —— поменять вид преобразований (строки/столбцы)')
