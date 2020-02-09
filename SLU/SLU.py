@@ -56,14 +56,14 @@ def OutPutDouble(slu, mode, sep, ord = 2):
                     temp = slu[i][j].replace('\\frac', '').split('}{')
                     slu[i][j] = f'{temp[0][1:]}/{temp[1][:-1]}'
     OutPutSlu(slu, sep)
-    print('-'*50)
+    print('-'*30)
 
 
 def LastSLU(slu, colName, tr, sep, output, cnt, constRes, dem=''):
     sluTemp = slu
-    slu = ConvertSLU(slu)
+    slu = ConvertSLU(dpc(slu))
     if sluTemp != slu:
-        OutPutSlu(slu, sep)
+        OutPutDouble(slu, 'f', sep)
         ans = input('save last SLU? ')
         if ans.lower() == 'y':
             if cnt % constRes == 0 and cnt != 0:
