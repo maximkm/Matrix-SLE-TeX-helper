@@ -343,16 +343,14 @@ def main():
                     trans = False if trans else True
                     slu = TransposeSLU(slu)
                     sep = len(slu[0])
-                    hist.append(dpc(slu))
-                    trHist.append(trans)
-                    sepHist.append(sep)
+                    AddHist(slu, hist, trHist, sepHist, sep, trans)
                 else:
                     print('delete partition')
             elif post == 'mode':
                 mode = (mode + 1) % 2
                 print(f'now mode =', ('col' if mode else 'row'))
             elif post == 'save':
-                if trans:
+                if colName == []:
                     SaveSLU(slu, sep)
                 else:
                     SaveSLU(UnionName(dpc(slu), colName, trans), sep)
@@ -364,7 +362,8 @@ def main():
                 slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, trans)
             elif post == 'fsr':
                 output = open('outputFSR.txt', 'w')
-                FSR(dpc(slu), output)
+                tempSLU = [row[:sep] for row in slu]
+                FSR(dpc(tempSLU), output)
                 output.close()
             else:
                 try:
@@ -385,10 +384,7 @@ def main():
                             x = int(post[1:post.find(')')])
                             y = int(post[post.rfind('(') + 1:-1])
                             colName[x - 1], colName[y - 1] = colName[y - 1], colName[x - 1]
-                    if hist[-1] != slu:
-                        hist.append(dpc(slu))
-                        trHist.append(trans)
-                        sepHist.append(sep)
+                    AddHist(slu, hist, trHist, sepHist, sep, trans)
                 except BaseException:
                     slu = dpc(hist[-1])
 
