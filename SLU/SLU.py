@@ -2,18 +2,18 @@ from copy import deepcopy as dpc
 from math import gcd
 
 
-def OutPutSluTex(slu, sep, output, dem=''):
+def OutputSLUTex(slu, sep, output, dem=''):
     print(f'{dem} ' + '\\left( \\begin{array}{' + 'c' * sep + ('|' if sep != len(slu[0]) else '') + 'c' * (len(slu[0]) - sep) + '}', file=output)
     for i in range(len(slu)):
         print(' & '.join(map(str, slu[i])) + ('\\\\' if i != len(slu) - 1 else ''), file=output)
     print('\\end{array}\\right)', file=output)
 
 
-def OutPutSlu(slu, sep):
-    x = max(map(len, map(str, [slu[i][j] for i in range(len(slu)) for j in range(len(slu[0]))]))) + 1
+def OutputSLU(slu, sep):
+    lenCell = max(map(len, map(str, [slu[i][j] for i in range(len(slu)) for j in range(len(slu[0]))]))) + 1
     for i in range(len(slu)):
         for j in range(len(slu[0])):
-            print(f'{str(slu[i][j]).rjust(x)}', end=('|' if j == sep - 1 and sep != len(slu[0]) else ' '))
+            print(f'{str(slu[i][j]).rjust(lenCell)}', end=('|' if j == sep - 1 and sep != len(slu[0]) else ' '))
         print('')
 
 
@@ -34,14 +34,14 @@ def ConvertSLU(slu):
                     if slu[row][col] % temp == 0:
                         slu[row][col] //= temp
                     else:
-                        bar = gcd(slu[row][col], temp)
+                        inx = gcd(slu[row][col], temp)
                         if temp < 0:
-                            bar = -bar
-                        slu[row][col] = '\\frac{' + str(slu[row][col]//bar) + '}{' + str(temp//bar) + '}'
+                            inx = -inx
+                        slu[row][col] = '\\frac{' + str(slu[row][col]//inx) + '}{' + str(temp//inx) + '}'
     return slu
 
 
-def OutPutDouble(slu, mode, sep, ord = 2):
+def OutputDouble(slu, mode, sep, ord=2):
     slu = ConvertSLU(slu)
     if mode.lower() == 'd':
         for i in range(len(slu)):
@@ -55,7 +55,7 @@ def OutPutDouble(slu, mode, sep, ord = 2):
                 if 'frac' in str(slu[i][j]):
                     temp = slu[i][j].replace('\\frac', '').split('}{')
                     slu[i][j] = f'{temp[0][1:]}/{temp[1][:-1]}'
-    OutPutSlu(slu, sep)
+    OutputSLU(slu, sep)
     print('-'*30)
 
 
@@ -63,58 +63,58 @@ def LastSLU(slu, colName, tr, sep, output, cnt, constRes, dem=''):
     sluTemp = slu
     slu = ConvertSLU(dpc(slu))
     if sluTemp != slu:
-        OutPutDouble(slu, 'f', sep)
+        OutputDouble(slu, 'f', sep)
         ans = input('save last SLU? ')
         if ans.lower() == 'y':
             if cnt % constRes == 0 and cnt != 0:
                 print(f'{dem} \\]\n\\[', file=output)
             if not colName:
-                OutPutSluTex(dpc(slu), sep, output, dem if cnt != 0 and cnt % constRes != 0 else '')
+                OutputSLUTex(dpc(slu), sep, output, dem if cnt != 0 and cnt % constRes != 0 else '')
             else:
-                OutPutSluTex(UnionName(dpc(slu), colName, tr), sep, output, dem if cnt != 0 and cnt % constRes != 0 else '')
+                OutputSLUTex(UnionName(dpc(slu), colName, tr), sep, output, dem if cnt != 0 and cnt % constRes != 0 else '')
 
 
 def TransposeSLU(slu):
-    a = len(slu)
-    b = len(slu[0])
+    row = len(slu)
+    col = len(slu[0])
     resSLU = []
-    for i in range(b):
+    for i in range(col):
         temp = []
-        for j in range(a):
+        for j in range(row):
             temp.append(slu[j][i])
         resSLU.append(dpc(temp))
     return resSLU
 
 
-def Action(slu, x, y, z, tr):
-    if tr:
+def Action(slu, first, second, act, isTrans):
+    if isTrans:
         slu = TransposeSLU(slu)
-    if z == 'swap':
-        slu[x - 1], slu[y - 1] = slu[y - 1], slu[x - 1]
-    elif z == '*':
-        slu[x - 1] = [item * y for item in slu[x - 1]]
-    elif z == '/':
-        for item in slu[x - 1]:
-            if item % y != 0:
+    if act == 'swap':
+        slu[first - 1], slu[second - 1] = slu[second - 1], slu[first - 1]
+    elif act == '*':
+        slu[first - 1] = [item * second for item in slu[first - 1]]
+    elif act == '/':
+        for item in slu[first - 1]:
+            if item % second != 0:
                 break
         else:
-            slu[x - 1] = [item // y for item in slu[x - 1]]
+            slu[first - 1] = [item // second for item in slu[first - 1]]
     else:
         for i in range(len(slu[0])):
-            slu[x - 1][i] += z * slu[y - 1][i]
-    if tr:
+            slu[first - 1][i] += act * slu[second - 1][i]
+    if isTrans:
         slu = TransposeSLU(slu)
     return slu
 
 
-def AddHist(slu, hist, trHist, sepHist, sep, tr):
+def AddHist(slu, hist, trHist, sepHist, sep, isTrans):
     if slu != hist[-1]:
         hist.append(dpc(slu))
-        trHist.append(tr)
+        trHist.append(isTrans)
         sepHist.append(sep)
 
 
-def Shrink(slu, hist, trHist, sepHist, sep, tr):
+def Shrink(slu, hist, trHist, sepHist, sep, isTrans):
     for i in range(len(slu)):
         temp = 1
         for j in range(len(slu[0])):
@@ -126,12 +126,12 @@ def Shrink(slu, hist, trHist, sepHist, sep, tr):
                 break
         if temp != 1:
             slu = Action(dpc(slu), i + 1, temp, '/', 0)
-    AddHist(slu, hist, trHist, sepHist, sep, tr)
+    AddHist(slu, hist, trHist, sepHist, sep, isTrans)
     return slu
 
 
-def EchelonForm(slu, mode, hist, trHist, sepHist, sep, tr):
-    slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, tr)
+def EchelonForm(slu, mode, hist, trHist, sepHist, sep, isTrans):
+    slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, isTrans)
     row, col = 0, 0
     fav = []
     while row < len(slu) and col < len(slu[0]):
@@ -145,7 +145,7 @@ def EchelonForm(slu, mode, hist, trHist, sepHist, sep, tr):
         if slu[row][col] != 0:
             if slu[row][col] < 0:
                 slu = Action(dpc(slu), row + 1, -1, '*', 0)
-            slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, tr)
+            slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, isTrans)
             fav.append([row, col])
             for i in range(row + 1, len(slu)):
                 if slu[i][col] != 0:
@@ -155,12 +155,12 @@ def EchelonForm(slu, mode, hist, trHist, sepHist, sep, tr):
                         idx = slu[row][col] // gcd(slu[i][col], slu[row][col])
                         slu = Action(dpc(slu), i + 1, idx, '*', 0)
                         slu = Action(dpc(slu), i + 1, row + 1, -slu[i][col] // slu[row][col], 0)
-                    AddHist(slu, hist, trHist, sepHist, sep, tr)
+                    AddHist(slu, hist, trHist, sepHist, sep, isTrans)
             row += 1
             col += 1
         else:
             col += 1
-        slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, tr)
+        slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, isTrans)
     if mode:
         fav.reverse()
         for row, col in fav:
@@ -172,8 +172,8 @@ def EchelonForm(slu, mode, hist, trHist, sepHist, sep, tr):
                         idx = slu[row][col] // gcd(slu[i - 1][col], slu[row][col])
                         slu = Action(dpc(slu), i, idx, '*', 0)
                         slu = Action(dpc(slu), i, row + 1, -slu[i - 1][col] // slu[row][col], 0)
-                    AddHist(slu, hist, trHist, sepHist, sep, tr)
-        slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, tr)
+                    AddHist(slu, hist, trHist, sepHist, sep, isTrans)
+        slu = Shrink(dpc(slu), hist, trHist, sepHist, sep, isTrans)
     return slu
 
 
@@ -235,14 +235,14 @@ def SluLoad():
                 temp.remove('|')
             temp = [x.replace('|', '') for x in temp]
             slu.append(list(map(int, temp)))
-    with open('config.txt') as file_handler:
+    with open('Settings\config.txt') as file:
         res = []
-        for num, line in enumerate(file_handler):
+        for num, line in enumerate(file):
             if num == 3:
                 break
             res.append(list(line.replace(' ', '').replace('\n', '').split('='))[-1])
-    autoPrint, mode, delim = res
-    return slu, sep, colName, int(autoPrint), int(mode), delim
+    autoPrint, mode, demit = res
+    return slu, sep, colName, int(autoPrint), int(mode), demit
 
 
 def SaveSLU(slu, sep):
@@ -254,8 +254,8 @@ def SaveSLU(slu, sep):
     inp.close()
 
 
-def UnionName(slu, colName, tr):
-    if tr:
+def UnionName(slu, colName, isTrans):
+    if isTrans:
         for i in range(len(colName)):
             slu[i] = [colName[i]] + slu[i]
         return slu
@@ -264,7 +264,7 @@ def UnionName(slu, colName, tr):
 
 
 def main():
-    slu, sep, colName, autoPrint, mode, delim = SluLoad()
+    slu, sep, colName, autoPrint, mode, demit = SluLoad()
     post = ''
     trans = False
     if len(slu) == 0:
@@ -277,18 +277,18 @@ def main():
     sepHist = [sep]
     while post != 'exit':
         if autoPrint:
-            OutPutSlu(slu, sep)
+            OutputSLU(slu, sep)
         posts = input(f'step {len(hist)}: ').replace(' ', '').lower().split(',')
         for post in posts:
             if post == 'p':
-                OutPutSlu(slu, sep)
+                OutputSLU(slu, sep)
             elif post[:2] == 'pd':
                 if len(post) == 2:
-                    OutPutDouble(dpc(slu), 'd', sep)
+                    OutputDouble(dpc(slu), 'd', sep)
                 elif post[2:].isalnum():
-                    OutPutDouble(dpc(slu), 'd', sep, int(post[2:]))
+                    OutputDouble(dpc(slu), 'd', sep, int(post[2:]))
             elif post == 'pf':
-                OutPutDouble(dpc(slu), 'f', sep)
+                OutputDouble(dpc(slu), 'f', sep)
             elif post == 'pt':
                 num = 0
                 cnt = 0
@@ -300,18 +300,18 @@ def main():
                 print('\\[', file=output)
                 for sepX, trX, sluX in zip(sepHist, trHist, hist):
                     num += 1
-                    OutPutSlu(sluX, sepX)
+                    OutputSLU(sluX, sepX)
                     ans = input(f'Save this matrix {num}/{len(hist)}? (y/n): ')
                     if ans.lower() == 'y':
                         if cnt % constRes == 0 and cnt != 0:
-                            print(f'{delim} \\]\n\\[', file=output)
+                            print(f'{demit} \\]\n\\[', file=output)
                         if not colName:
-                            OutPutSluTex(dpc(sluX), sepX + trX, output, delim if cnt != 0 and cnt % constRes != 0 else '')
+                            OutputSLUTex(dpc(sluX), sepX + trX, output, demit if cnt != 0 and cnt % constRes != 0 else '')
                         else:
-                            OutPutSluTex(UnionName(dpc(sluX), colName, trX), sepX + trX, output, delim if cnt != 0 and cnt % constRes != 0 else '')
+                            OutputSLUTex(UnionName(dpc(sluX), colName, trX), sepX + trX, output, demit if cnt != 0 and cnt % constRes != 0 else '')
                         cnt += 1
                     if num == len(sepHist):
-                        LastSLU(dpc(sluX), colName, trX, sepX + trX, output, cnt, constRes, delim)
+                        LastSLU(dpc(sluX), colName, trX, sepX + trX, output, cnt, constRes, demit)
                 print('\\]', file=output)
                 output.close()
             elif post == 'back':
@@ -321,23 +321,10 @@ def main():
                     trHist.pop()
                     slu = dpc(hist[-1])
             elif post == 'help':
-                print('(i)(j) —— swap row i and row j')
-                print('(i)*(k) —— elems row i * num k')
-                print('(i)/(k) —— elems row i / num k')
-                print('(i)+-k(j) —— row i +- k * row j')
-                print('p —— print SLU')
-                print('pt —— print history LaTeX code SLU')
-                print('pdk —— вывести СЛУ с дробями, k - необязательный параметр (кол-во знаков после запятой)')
-                print('pf —— вывести СЛУ ввиде несократимой дроби')
-                print('back —— cancel last action')
-                print('tr —— transpose matrix')
-                print('mode —— поменять вид преобразований (строки/столбцы)')
-                print('form —— ступенчатый вид')
-                print('best form —— улучшенный ступенчатый вид')
-                print('fsr —— код ФСР LaTeX')
-                print('shrink —— упростить СЛУ')
-                print('save —— сохранить матрицу в input.txt')
-                print('exit —— завершить программу')
+                with open('Settings\info.txt', encoding='utf8') as file:
+                    for line in file:
+                        print(line, end='')
+                    print('\n---------------------------------------')
             elif post == 'tr':
                 if sep == len(slu[0]):
                     trans = False if trans else True
