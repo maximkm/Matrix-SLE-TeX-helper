@@ -189,6 +189,9 @@ def FSR(slu, output):
         else:
             free.append(col)
             col += 1
+    while col < len(slu[0]):
+        free.append(col)
+        col += 1
     if free:
         print('$', end='', file=output)
         free.reverse()
